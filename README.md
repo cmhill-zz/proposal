@@ -1,4 +1,4 @@
-proposal
+Proposal
 ========
 
 PhD Proposal
