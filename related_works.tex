@@ -1,1 +1,129 @@
 \section{Related Work}
+
+The traditional approach for clustering 16S rRNA sequences has involved the use of a multiple sequence alignment (MSA) for all sequences.
+
+Optimal multiple sequence alignment between a collection of sequences can be done with a dynamic programming algorithm.
+
+Impractical for the large number of sequences.
+454 technologies can produce millions of sequences.
+
+Greedy methods can be used to iteratively build a rooted tree.
+Then a specific cutoff can be given to split the tree into clusters.
+
+Alternatives include building a distance matrix between each pair of sequences.  
+Once the distance matrix is built, clustering is typically done via hierarchical methods.
+Agglomerative methods involve a bottom-up approach, where each sequence starts as its own cluster then iteratively merged with other clusters.
+Divisive methods, on the other hand, work from a top-down approach, where all sequences belong to a single cluster then are iteratively split into smaller clusters.
+
+While hierarchical methods requires less work than the multiple sequence alignment, calculating the pairwise distances generally requires cubic work, making it impracticable for a large number of sequences.
+
+An alternative approach for clustering sequences involves selecting a sequence to become the cluster center.
+The center is then used to recruit the remaining sequences that fall within some given \emph{distance} threshold to the center.
+The distance between two sequences can include edit distance (also called Levenshtein distance), k-mer distance, similarity, identity, ...
+
+\subsection{Greedy clustering paradigm}
+
+A commonly-used clustering paradigm for sequence clustering is to iteratively select a sequence to serve as a cluster center and then recruit all remaining sequences that fall within some given distance of the cluster center.
+This process is repeated until no more sequences remain or the predetermined list of centers is exhausted.
+
+\subsection{Cluster center selection}
+There are three strategies used for selecting potential cluster centers.
+In {\bf \emph{de novo}} clustering, centers are selected \emph{only} from the set of input sequences.  Strategies for selecting potential centers are described below.
+In {\bf closed-reference} clustering, a list of predetermined centers is given, such as a collection of previously discovered OTUs\cite{desantis_greengenes_2006,quast_silva_2013}.
+In {\bf open-reference} clustering, sequences are first recruited to a list of predetermined cluster centers.
+Afterwards, the centers are chosen by the \emph{de novo} methods.
+
+Selecting which sequence to use as the cluster center is a difficult problem.
+One strategy is to select the remaining sequence with the longest length.
+An intuitive argument is that a longer sequence would more likely recruit shorter sequences.
+However, the more rigorous argument is that selecting the longest remaining sequence allows you certain mathematical guarantees when aligning and recruiting shorter sequences.
+For example, given 3 sequences: \emph{A}, \emph{B}, and \emph{C}.  If the length of \emph{A} is less than \emph{B} and \emph{C} and we know the distance between \emph{A} and \emph{B} and \emph{A} \emph{C}, we can not say anything for certain about the distance between \emph{A} and \emph{C}.
+We do not have any data about the overlapping regions between \emph{B} and \emph{C}.
+
+{\bf INSERT FIGURE OF THIS.}
+
+This center selection strategy is used by CD-HIT\cite{li_clustering_2001}, DNACLUST\cite{ghodsi_dnaclust:_2011}.
+
+Frequency of k-mers.
+
+\subsection{Sequence recruitment}
+
+A key part of any clustering algorithm is how the distance between two objects is computed.
+In the case of sequence clustering, we need to calculate the distance between two strings.
+Commonly-used distance metrics include:
+
+\begin{itemize}
+
+  \item Edit (Levenshtein) distance
+  \item K-mer
+  \item Identity
+
+\end{itemize}
+
+\subsubsection{Edit distance}
+
+The \emph{edit distance} between a text string $t = t_1 t_2 ... t_n$ and pattern string $p = p_1 p_2  ... p_m$ is the minimum number of differences between them such that one string can be transformed into the other.
+A difference is one of the following:
+
+\begin{enumerate}
+
+  \item A character of the text corresponds to a different character of the pattern.
+  \item A character of the text corresponds to no character (a gap) in the pattern.
+  \item A character of the pattern corresponds to no character (a gap) in the text.
+
+\end{enumerate}
+
+Algorithms for $k-mismatches$ only satisfies differences of type 1.
+
+We use the Needleman–Wunsch{\bf NEED CITATION} dynamic programming algorithm to calculate the edit distance between two strings.
+
+
+ Algorithm to solve $k$-differences 
+
+\begin{equation}
+\begin{aligned}
+M[i, j] = \quad
+\begin{cases}
+\quad M[i - 1, j] + 1 \\
+\quad M[i, j-1] + 1 \\
+\quad M[i-1, j-1] + \begin{cases} 
+0, \quad \text{if }t[i] == p_j \\
+1, \quad \text{else } \\
+\end{cases}
+\end{cases}
+\end{aligned}
+\end{equation}
+
+
+
+% Edit distance computation
+ \begin{algorithm}
+ \caption{Compute Edit Distance between two strings.  $O(nm)$ work.}\label{edit_distance}
+ \begin{algorithmic}[1]
+ \Procedure{ComputeEditDistance}{$a,b$}
+ \State $n\gets |a|$
+ \State $m\gets |b|$
+
+ \For{$i=0 .. n$}   \State $M(i,0) \gets i$ \EndFor
+ \For{$i=0 .. m$}
+  \State $M(0,i) \gets i$
+\EndFor
+
+ \For{$i=1 .. n$}
+ \For{$j=1 .. m$}
+  \State $row \gets M(i-1,j) + 1$ \Comment Number of edits with a gap inserted into $b$
+  \State $col \gets M(i,j-1) + 1$ \Comment Number of edits with gap inserted into $a$
+  \State $diag \gets M(i-1, j-1)$ \Comment Number of edits with matching characters $a_i$ and $b_j$
+  \If{$a_i \neq b_j$}  $diag \gets diag +  1$ \EndIf
+  \State $M(i,j) \gets \text{min}(row,col,diag)$
+\EndFor
+\EndFor
+\Return $M(n,m)$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+If we want to find a global alignment within $k$-differences, we only need to worry about a $2k+1$ band along the diagonal.
+This reduces the amount of work from $O(n^2)$ to $O(nk)$.
+However, this assumes we are aligning the two sequences end-to-end.
+

@@ -1,14 +1,23 @@
 \documentclass{article}
 
 \usepackage{caption,color,fancyvrb,subfig}
-\usepackage{code,algorithmic,algorithm}
+%\usepackage{code,algorithmic,algorithm}
+%\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+%\usepackage[]{algorithm2e}
 %\usepackage{graphicx,epsfig}
 \usepackage{amsmath,amsthm,amsfonts}
 %\usepackage{url}
 \usepackage{graphicx}
 \usepackage{setspace}
 \usepackage{verbatim}
+\usepackage{datetime}
+ \usepackage{float}
 
+\usepackage[backend=bibtex8]{biblatex} 
+
+\addbibresource{prelim.bib}
 
 %\begin{comment}
 \textwidth = 6.5 in
@@ -25,7 +34,7 @@
 \def\inv{^{-1}}
 
 \newcommand{\ignore}[1]{}
-
+\newdateformat{mydate}{\monthname[\THEMONTH] \ordinaldate{\THEDAY}, \THEYEAR}
 
 \begin{document} 
 
@@ -49,12 +58,12 @@ Philosophy}\\[5.5cm]
 \emph{Advisor:} \\
 \textsc{Dr. Mihai Pop}\\[.5cm]
 \emph{Committee Members:}\\
-\textsc{Dr. First M. Last}\\
-\textsc{Dr. First M. Last}\\[4.0cm]
+\textsc{Dr. Atif Memon}\\
+\textsc{Dr. H\'ector Corrada Bravo}\\[4.0cm]
 
 {\bfseries Department of Computer Science}\\
 {\bfseries University of Maryland, College Park, MD 20742}\\
-{\bfseries Month Day, Year}
+{\bfseries \mydate\today}
 \vfill
 
 \end{center}
@@ -96,8 +105,8 @@ Insert abstract here.
 %\label{fig:sample_figure}
 %\end{figure}
 
-Introduction here \cite{SourceYear}.
-
+Introduction here\cite{landau_fast_1988}.
+\today
 %\begin{figure}
 %\begin{center}
 %\begin{verbatim}
@@ -200,8 +209,12 @@ Insert conclusion here.
 
 \newpage
 
-\bibliographystyle{plain} 
-\bibliography{prelim}
+\nocite{*}
+\printbibliography
+
+%\bibliographystyle{plain} 
+%\bibliography{prelim}
+
 
 \end{document}
 

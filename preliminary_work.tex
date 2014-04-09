@@ -2,12 +2,78 @@
 
 \subsection{Parallelizing sequence recruitment to a cluster center}
 
-\subsubsection{Naive}
+Due to the large scale of sequencing data produced, clustering tools must utilize multiple processors to process the data in a timely manner.
 
-\subsubsection{Work-based}
+Here, we present two parallel approaches for recruiting sequences to a cluster center.
+The first approach (na{\"i}ve) is based on evenly partitioning the sequences among the processors.
+The second approach (work-based) involves partitioning the sequences based on the potential work that needs to be done when calculating the edit distance to the center.
+If the sequences are stored in a trie-like data structure, then it is beneficial to partition highly similar sequences together despite potentially assigning an uneven number of sequences to each processor.
+
+We implement these parallel approaches in DNACLUST\cite{ghodsi_dnaclust:_2011} show the speed-ups when clustering tens of millions of 16S rRNA sequences. 
+
+\subsubsection{Na{\"i}ve parallelization strategy}
+
+The second step of DNACLUST's algorithm involves recruiting all sequences that lie within a given distance of the current cluster center.
+Given $p$ processors, we can evenly partition the database into $p$ chunks such that each processor can calculate edit distance independently in parallel.
+
+{\bf INSERT FIGURE}
+
+\subsubsection{Work-based parallelization strategy}
+
+Since we reuse part of the dynamic programming matrix, evenly partitioning the sequences may split highly similar sequences into separate threads.
+
+Instead of evenly splitting the number of sequences between threads, we can evenly split the amount of potential work (characters we need to examine in the trie).
+
+This is done by counting the total number of characters on the edges in the trie (trie length) and dividing by the number of threads.
+
+{\bf INSERT FIGURE}
 
 
 \subsection{Efficient data structures for edit distance computation}
 
+Currently, we require $O(n^2)$ work to calculate the edit distance between two sequences.
+This cost is reduced to $O(nk)$ in the specific case of globally aligning two sequences within $k$ edits.
+
+In this section, we describe how how to further improve the runtime to $O(k^2)$ in the case of global alignment and $O(nk)$ for semi-global alignment.
+
+\subsubsection{Alternative representation of the dynamic programming matrix}
+When calculating the edit distance between sequences $A = a_1 a_2 .. a_n$ and $B = b_1 b_2 .. b_m$, entry ($i,j$) in matrix $M$ represents the minimum edit distance between prefixes $A_{1,i}$ and $B_{1,j}$ (Algorithm \ref{edit_distance}).
+
+An alternative way to view this alignment is to consider each diagonal $d$ and edit $e$ of $M$.  The $d$-diagonal is equal to $i-j$.
+Let $C$ be another matrix where entry ($i,j$) now refers to the furthest reaching row in $M$ of diagonal $d$ that contains $e$ edits.
+
+-Show that the matrix solves the problem.
+
+-Show that we can write a recurrence to solve this problem.
+
+-Show the algorithm pseudocode.
+
+-LCP can be answered in constant time via a suffix tree (gusfield).
+
+-Compare the two approaches in terms of cells of the dp matrix that need to be computed.
+
+-More difficult to exploit the sorted sequences (possible future work).
+
+-Future work includes actually implementing the O(1) LCP extension.
+
 \subsubsection{Suffix tree cluster center representation}
 
+\subsection{Handling ambiguous reads}
+
+When a sequence is being recruited by a center, it is possible that this sequence is within some distance from another potential center.
+Henceforth, we refer to a sequence that lies within a given distance from multiple centers as \emph{ambiguous}.
+Currently in DNACLUST, an ambiguous sequence is recruited by the first center that encounters.
+Depending on the number of ambiguous of sequences, this may affect the resulting cluster abundances.
+Furthermore, downstream analyses on analyzing these count matrices (such as detecting differentially abundant OTUs) could lead to incorrect results.
+
+Here, we describe different methods for assigning ambiguous reads.
+
+The first way is to simply discard any ambiguous reads and only consider reads that can be uniquely aligned to a single center.
+
+Another way is to randomly assign the ambiguous read to the set of potential centers.
+
+Similarly, instead of randomly assigning the reads, we can assign a fractional count to each center.
+
+Lastly, we can assign a read based on the proportion of uniquely aligned reads to the center.  In other words, if a read can align equally well to two different centers, but one center contains uniquely aligned reads and the other contains none, then it is more probable that the read came from the first center.
+
+{\bf INSERT FIGURE}
