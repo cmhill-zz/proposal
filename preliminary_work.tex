@@ -20,7 +20,7 @@ Given $p$ processors, we can evenly partition the database into $p$ chunks such 
 
 \subsubsection{Work-based parallelization strategy}
 
-Since we reuse part of the dynamic programming matrix, evenly partitioning the sequences may split highly similar sequences into separate threads.
+Since we reuse part of the dynamic programming table, evenly partitioning the sequences may split highly similar sequences into separate threads.
 
 Instead of evenly splitting the number of sequences between threads, we can evenly split the amount of potential work (characters we need to examine in the trie).
 
@@ -31,28 +31,132 @@ This is done by counting the total number of characters on the edges in the trie
 
 \subsection{Efficient data structures for edit distance computation}
 
-Currently, we require $O(n^2)$ work to calculate the edit distance between two sequences.
+Currently, we use an $O(n^2)$ speed and time method to calculate the edit distance between two sequences (Algorithm \ref{edit_distance}).
 This cost is reduced to $O(nk)$ in the specific case of globally aligning two sequences within $k$ edits.
 
-In this section, we describe how how to further improve the runtime to $O(k^2)$ in the case of global alignment and $O(nk)$ for semi-global alignment.
+In this section, we describe how to further improve the runtime to $O(k^2)$ in the case of global alignment and $O(nk)$ for semi-global alignment using an hybrid dynamic programming method developed by Landau and Vishkin\cite{landau_introducing_1986}.
 
-\subsubsection{Alternative representation of the dynamic programming matrix}
-When calculating the edit distance between sequences $A = a_1 a_2 .. a_n$ and $B = b_1 b_2 .. b_m$, entry ($i,j$) in matrix $M$ represents the minimum edit distance between prefixes $A_{1,i}$ and $B_{1,j}$ (Algorithm \ref{edit_distance}).
+\subsubsection{Alternative representation of the dynamic programming table}
 
-An alternative way to view this alignment is to consider each diagonal $d$ and edit $e$ of $M$.  The $d$-diagonal is equal to $i-j$.
-Let $C$ be another matrix where entry ($i,j$) now refers to the furthest reaching row in $M$ of diagonal $d$ that contains $e$ edits.
+Thus far, when calculating the edit distance between sequences $t = t_1 t_2 .. t_n$ and $p = p_1 p_2 .. p_m$, cell ($i,j$) in the dynamic programming table $M$ represents the minimum edit distance between prefixes $t_{1,i}$ and $p_{1,j}$ (Algorithm \ref{edit_distance}).
+
+\begin{definition}
+Given an $n$-by-$m$ dynamic programming table, cells on an {\bf $i$-diagonal} are any cells ($k$,$j$) where $j-i=k$.
+\end{definition}
+%Let M be a dynamic programming table with dimensions $0 \leq m \leq n$, an {\bf $i$-diagonal} are any cells ($k$,$j$) where $j-i=k$.
+
+\begin{definition}
+A {\bf $d$-path} is a path through the dynamic programming table starting at row 0 and ending at a cell with d edits.  A d-path is {\bf farthest-reaching} in the i-diagonal if it ends in the i-diagonal and is greater than or equal to the ending column of any other d-path ending in the i-diagonal.
+\end{definition}
+
+We reduce the storage requirements by only recording the last column with $e$ edits among a given $i$-diagonal.
+If we are only interested in finding alignments within $k$-difference, for each $i$-diagonal in our table, we need to record at most $k$ entries.
+We do not need to record more than $k$ entries because in our given formulation of the problem it is impossible to decrease in the amount of edits made.
+Since we only penalize start gaps in the pattern and not the text, the amount of diagonals we have to compute is $n - m + k$.
+Thus, we require $O(nk)$ memory to find $k$-differences between the text and pattern.
+
+At the high level, for every edit number $0 \leq d \leq k$, we will compute the farthest-reaching $d$-path on the $i$-diagonal using the farthest-reaching ($d-1$)-paths on diagonals $i-1$, $i$, $i+1$.
+
+%An alternative way to view this alignment is to consider each diagonal $d$ and edit $e$ of $M$.
+Let $C$ be a dynamic programming table where cell ($i,j$) now refers to the farthest-reaching column in $M$ of the $j$-diagonal that contains $i$ edits.
+For simplicity, lets assume we can access the negative $j$-diagonals of the table with cell (\_,$-j$).
+Since accessing negative indexes in arrays are invalid in most programming languages, in practice we offset each diagonal by $k$ (REFER TO FIGURE).
+
+To begin, we need to initialize the first row of $C$, where $d=0$.
+A $0$-path corresponds to a path ending on the $i$-diagonal with no mismatches.
+For each column $j$ ($j$-diagonal in $M$), cell ($i$,$j$) is set to the \emph{longest common extension} of $p_1..p_m$ and $t_j..t_n$.
+
+For $d > 0$, to compute the farthest-reaching $d$-path on the $i$-diagonal, we first need to consider three different farthest-reaching $d-1$-paths:
+
+\begin{itemize}
+  \item {\bf ($d-1$)-path on ($i-1$)-diagonal.} We follow a horizontal edge (a space in $p$), which increases the column index by 1.
+  \item {\bf ($d-1$)-path on ($i$)-diagonal.} We follow an edge corresponding to a mismatch between a character of $p$ and $t$ and increment the column index by 1.
+  \item {\bf ($d-1$)-path on ($i+1$)-diagonal.} We follow a vertical edge (a space in $t$).  We do not increment the column index in this case.
+\end{itemize}
 
 -Show that the matrix solves the problem.
 
--Show that we can write a recurrence to solve this problem.
 
--Show the algorithm pseudocode.
+\begin{equation}
+\begin{aligned}
+\text{col} & = \quad max
+\begin{cases}
+\quad C[i - 1, j-1] + 1 \\
+\quad C[i - 1, j] + 1 \\
+\quad C[i - 1, j+1] 
+\end{cases} \\
+C[i, j] & =  \quad \text{col} + \text{LCE}[t_{\text{col}}, p_{\text{col} - \text{j}}]
+\end{aligned}
+\end{equation}
+
+ \begin{algorithm}
+ \caption{Landau-Vishkin $k$-differences algorithm. $O(kn)$ work.}\label{landau_vishkin}
+ \begin{algorithmic}[1]
+ \Procedure{ComputeKDifferences}{$t,p,k$}
+ \State $n\gets |t|$
+ \State $m\gets |p|$
+
+ \For{$d=0 .. n - m + k + 1$}  \State $C(-1,d) \gets i$ \EndFor \Comment Set first row of table $C$ to one minus its diagonal. 
+ \For{$d= -(k+1) .. -1 $}
+    \State $C(|d| - 1 ,d) \gets -1$
+    \State $C(|d| - 2 ,d) \gets -\inf$
+\EndFor
+
+ \For{$i=0 .. n-m+k$}
+ \For{$e=0 .. k$}
+  \State $d \gets c - e$
+  \State $col \gets max(c(e-1,d-1) + 1,c(e-1,d)+ 1,c(e-1,d+1))$
+  \While{$col < n$ \textbf{and} $col - d < m$ \textbf{and} $x_{col+1} == y_{col+1-d}$}
+    \State $col \gets col + 1$
+  \EndWhile
+  \State $c(i,j) \gets \text{min}(col, m + d, n)$
+\EndFor
+\EndFor
+\Return $c(n,m)$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+
 
 -LCP can be answered in constant time via a suffix tree (gusfield).
 
 -Compare the two approaches in terms of cells of the dp matrix that need to be computed.
 
+\subsubsection{Efficient $k$-difference implementation}
+%Although our implementation of Landau-Vishkin does not provide a constant time
+We provide an implementation of both the n\"aive and the Landau-Vishkin algorithms written in C.
+For our experiment, we created a 1,000 sequence sample from an environmental 16S rRNA data set.
+The database sequences ranged in length from 300bps to 600bps.
+We randomly selected a sequence from the database to serve as our center. 
+The center was aligned against the database sequences with $k=5$ using both methods (Table \ref{table:naive_vishkin}).
+Runtimes were averaged over 100 runs.
+
+\begin{center}
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c}
+               & Semi-global (k=5) \\
+\hline 
+Na\"ive          & 1.022 sec  \\
+Landau-Vishkin & 0.040 sec \\
+\hline 
+Speedup        & 25.599x
+\end{tabular}
+\caption{Runtime comparison of the na\"ive and Landau-Vishkin\cite{landau_introducing_1986} methods for finding all semi-global alignments within $k$-differences. The center (a 637bp sequence) was aligned against a database consisting of 1,000 16S rRNA sequences (ranging in lengths from 300-600bp) with $k=5$.  Runtimes were averaged over 100 runs.}
+\label{table:naive_vishkin}
+\end{table}
+\end{center}
+
+It is important to note that in our current implementation we used an inefficient method for computing the longest common extension between two substrings.
+Despite this, our implementation of the Landau-Vishkin algorithm is \emph{25x} faster than the na\"ive method.
+
 -More difficult to exploit the sorted sequences (possible future work).
+DNACLUST leverages the fact that the database of sequences are highly similar.
+By sorting the database sequences, we can reuse the first $l$ rows of the dynamic programming table between database sequences $i$ and $i+1$, where $l$ is equal to the longest common prefix of $i$ and $i+1$.
+Our current implementation does not account for this.
+
+
 
 -Future work includes actually implementing the O(1) LCP extension.
 

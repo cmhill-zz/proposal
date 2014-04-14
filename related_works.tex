@@ -82,12 +82,12 @@ We use the Needleman–Wunsch{\bf NEED CITATION} dynamic programming algorithm t
 
 \begin{equation}
 \begin{aligned}
-M[i, j] = \quad
+M[i, j] = \quad min
 \begin{cases}
 \quad M[i - 1, j] + 1 \\
 \quad M[i, j-1] + 1 \\
 \quad M[i-1, j-1] + \begin{cases} 
-0, \quad \text{if }t[i] == p_j \\
+0, \quad \text{if }t_i == p_j \\
 1, \quad \text{else } \\
 \end{cases}
 \end{cases}
