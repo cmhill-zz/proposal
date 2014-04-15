@@ -26,6 +26,8 @@ Instead of evenly splitting the number of sequences between threads, we can even
 
 This is done by counting the total number of characters on the edges in the trie (trie length) and dividing by the number of threads.
 
+{\bf SIMD}
+
 {\bf INSERT FIGURE}
 
 
@@ -152,11 +154,54 @@ It is important to note that in our current implementation we used an inefficien
 Despite this, our implementation of the Landau-Vishkin algorithm is \emph{25x} faster than the na\"ive method.
 
 -More difficult to exploit the sorted sequences (possible future work).
+\subsubsection{Exploiting sequence similarity}
 DNACLUST leverages the fact that the database of sequences are highly similar.
 By sorting the database sequences, we can reuse the first $l$ rows of the dynamic programming table between database sequences $i$ and $i+1$, where $l$ is equal to the longest common prefix of $i$ and $i+1$.
-Our current implementation does not account for this.
+Our current implementation does not account for this; however, here we will outline the steps necessary to recreate this feature with our alternative dynamic programming table implementation.
 
+In the traditional dynamic programming table, the $i$-th row of the table correspond to the $i$-th of the pattern and the $j$-th column corresponds to the $j$-th character of the text.
+After populating the full dynamic table, we now attempt to align the new pattern with the text.
+The new pattern shares $l$ characters with the previously aligned pattern.
+Here we can start aligning from the $(l+1)$-th row because we have already aligned the prefix ending at position $l$ of the new pattern with the previous pattern.
 
+In our alternative dynamic programming table, the $i$-th row of the table corresponds to the $i$-th allowed edit distance and the $j$-th column corresponds to the $j$-th diagonal of the traditional dynamic programming table.
+It becomes trickier to reuse information from this dynamic programming table because edits along a given diagonal in the traditional dynamic programming table may start before the $i$-th row and extend past the $(l+1)$-th row.
+%Thus, for each diagonal we need to find all acceptable cells within 
+We can only reuse the information in this alternative dynamic program table if along a given $i$-diagonal and edit distance, the farthest-reaching column ends on or before the $(i+l)$-th column.
+
+In Algorithm \ref{landau_vishkin}, we calculated the cells in table $c$ starting from the 0 anti-diagonal.  Cell $c(e,d)$ lies on the $(e+d)$ anti-diagonal.
+When calculating $c(e,d)$, we first find the farthest-reaching column (max of $c(e-1,d-1) + 1$, $c(e-1,d)$ + 1, $c(e-1,d-1)$) then extend the match between the pattern and text as far as possible.
+As we proceed downwards along the given $c$ anti-diagonal, if the value in the cell $c(e,d) - d$ is greater than the $l$ we need to recalculate the cell.
+We subtract by $d$ to correct for the offset start position of the $d$-diagonal.
+A value greater than $l$ indicates that the longest $e$-path on the $d$-diagonal extends past the shared prefix of the current and previous patterns.
+Thus, for a given $e$ and $d$, if $c(e,d) - d > l$, we need to recalculate the cell.
+If we have to recalculate the $c(e,d)$ then we are forced to recalculate any cells that depend on $c(e,d)$, which in this case would be $c(e+1, d-1)$, $c(e+1, d)$, and $c(e+1, d+1)$.
+
+One important thing to note is that if $c(e,d)$ is the first cell in column $d$ that we have to recompute, then we can save this index to speed up finding the first cell in column $d+1$.
+Assume $c(e,d)$ does \emph{not} need to be recomputed.
+That means that the value (farthest-reaching column) in cells $c(e-1,d-1)$, $c(e-1,d)$, and $c(e-1,d-1)$) are all less than $c(e,d)$ and do not need to be recomputed.
+If any of the three adjacent cells above $c(e,d)$ had to be recomputed, then we would be forced to recompute $c(e,d)$.
+
+\begin{theorem}
+%For a given $d$, let $j$ be the lowest $e$ such that $c(j,d)$ does not need to be recomputed and $c(j+1,d)$ has to be recomputed.  The largest $e$ that does not need to be recomputed in column $d+1$ is either $j-1$, $j$, or $j+1$.
+For a given $d$, let $j$ be the lowest $e$ such that $c(j,d)$ needs to be recomputed, but $c(j-1,d)$ does not need to be recomputed. The lowest $e$ that needs to be recomputed in column $d+1$ is either $j-1$, $j$, or $j+1$.
+\end{theorem}
+
+\begin{proof}
+Assume not and $j-2$ is the lowest $e$ that needs to be recomputed in column $d+1$.  If $c(j,d)$ does need to be recomputed, then $c(j-1,d-1)$, $c(j-1,d)$, and $c(j-1,d+1)$ do not need to be recomputed.  If $c(j-2,d+1)$ needs to be recomputed, then $c(j-1,d)$ needs to be recomputed since $c(j-1,d)$ depends on $c(j-2,d-1)$, $c(j-2,d)$, $c(j-2,d+1)$.  However, we have already said that $j$ is the lowest $e$ such that $c(j,d)$ does not need to be recomputed, and since $c(j,d)$ depends on cells $c(j-1,d-1)$, $c(j-1,d)$, and $c(j-1,d-1)$, $c(j-1,d)$ does \emph{not} to be recomputed.  Hence a contradiction.  A similar reasoning can be done when for $j-3$, $j-4$, ..., 0.
+
+Now assume $j+2$ is the lowest $e$ that needs to be recomputed in column $d+1$, making $j+1$ the first $e$ that does not need to be recomputed.  If $c(j+1,d+1$) does need to be recomputed, then the cells it depends ($c(j,d-1)$, $c(j,d)$, $c(j,d+1)$) upon do not need to be recomputed.  However, we have already said that $j$ is the lowest $e$ such that $c(j,d)$ needs to be recomputed.  Hence, another contradiction.  A similar strategy can be used for $j+3$, $j+4$ ..., $k$.
+
+%  If $c(j+2,d+1)$ is the lowest cell in column $d+1$ that needs to be recomputed, then by definition $c(j+1,d+1)$ does not need to be recomputed.
+
+\end{proof}
+
+The runtime of finding the starting cells to recompute along on a diagonal takes $O(k)$ work because we start on the first anti-diagonal and proceed downwards until we find the first the cell where $c(e,d) - d > l$.
+Then when processing the next anti-diagonal, we only need to look at potentially three start positions of the first cell in that column to be recomputed, taking only $O(1)$ time.
+
+In the true implementation of it requires only $O(1)$ work to calculate the longest common extension between substrings starting at $t_i$ and $p_j$.
+Asymptotically, it requires no more work to recompute $c(e,d)$.
+Since our current implementation does not have this feature yet, we expect that
 
 -Future work includes actually implementing the O(1) LCP extension.
 
