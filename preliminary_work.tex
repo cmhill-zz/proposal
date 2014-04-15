@@ -104,7 +104,7 @@ C[i, j] & =  \quad \text{col} + \text{LCE}[t_{\text{col}}, p_{\text{col} - \text
     \State $C(|d| - 2 ,d) \gets -\inf$
 \EndFor
 
- \For{$i=0 .. n-m+k$}
+ \For{$i=0 .. n-m+k$} \Comment Process table along the anti-diagonals.
  \For{$e=0 .. k$}
   \State $d \gets c - e$
   \State $col \gets max(c(e-1,d-1) + 1,c(e-1,d)+ 1,c(e-1,d+1))$

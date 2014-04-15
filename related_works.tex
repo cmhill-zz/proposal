@@ -1,5 +1,8 @@
 \section{Related Work}
 
+The traditional approach for clustering sequences was to use a hierarchical clustering method.
+
+
 The traditional approach for clustering 16S rRNA sequences has involved the use of a multiple sequence alignment (MSA) for all sequences.
 
 Optimal multiple sequence alignment between a collection of sequences can be done with a dynamic programming algorithm.
@@ -20,6 +23,58 @@ While hierarchical methods requires less work than the multiple sequence alignme
 An alternative approach for clustering sequences involves selecting a sequence to become the cluster center.
 The center is then used to recruit the remaining sequences that fall within some given \emph{distance} threshold to the center.
 The distance between two sequences can include edit distance (also called Levenshtein distance), k-mer distance, similarity, identity, ...
+
+% Booktabs require to add \usepackage{booktabs} to your document preamble
+\begin{table}[t]
+\centering\scriptsize
+\hspace*{-1.5cm}
+\begin{tabular}{@{}llcccccccc@{}}
+\toprule
+Tool        & Description                                                                                                                                       & DNA & Protein & \emph{De novo} & Ref & Exact & Multi-core & Distance measure         & Strategy     \\ \midrule
+BLAST\cite{altschul_gapped_1997}       & \multirow{4}[3]{4.5cm}{Alignment tool using neighborhood keywords to speed up alignment A script can be used to align to a reference database and filter results.}       & Y   & Y       & N       & Y             & N     & Y                & N/A                      & N/A          \\
+\\
+\\
+\\
+\\
+\\
+AbundantOTU\cite{ye_identification_2010} &  \multirow{2}[3]{4.5cm}{Fast method to build cluster centers from abundant k-mers}                                                                                         & Y   & N       & Y       & N             & Y     & N                & Sim               & Greedy       \\
+\\
+\\
+\\
+CD-HIT\cite{li_clustering_2001,fu_cd-hit:_2012}      &  \multirow{2}[3]{4.5cm}{Family of clustering tools. Speed comes from using a short word filter to prune potential alignments.}                                             & Y   & Y       & Y       & N             & N\tablefootnote{Only exact for a preset number of similarities.}    & Y                & Sim               & Greedy       \\
+\\
+\\
+\\
+DNACLUST\cite{ghodsi_dnaclust:_2011}    &  \multirow{2}[3]{4.5cm}{Fast, exact clustering tool that exploits database sequence similarity to reduce work.}                                                            & Y   & N       & Y       & Y             & Y     & Y                & Sim / Mis & Greedy       \\
+\\
+\\
+\\
+DySC\cite{zheng_dysc:_2012}        &  \multirow{2}[3]{4.5cm}{Uses a two-step clustering heuristic to build larger clusters.}                                                                                    & Y   & N       & Y       & N             & N     & N                & Sim               & Greedy       \\
+\\
+\\
+ESPRIT-Tree\cite{cai_esprit-tree:_2011} &  \multirow{2}[3]{4.5cm}{Hierarchical method that represents a cluster of sequences as a single probabilistic sequence and uses that for pair-wise alignments of clusters.} & Y   & N       & Y       & N             & N\tablefootnote{Default k-mer length filter does not guarantee correctness.}     & N                & Sim               & Hierarchical \\
+\\
+\\
+\\
+\\
+HPC-CLUST\cite{rodrigues_hpc-clust:_2014}   &  \multirow{2}[3]{4.5cm}{Scalable, and flexible hierarchical method for clustering pre-aligned reads.}                                                                      & Y   & N       & Y       & N             & N/A\tablefootnote{Takes as input pair-wise sequence distances.}    & Y                & Sim               & Hierarchical \\
+\\
+\\
+\\
+SEED\cite{bao_seed:_2011}        &  \multirow{2}[3]{4.5cm}{Very fast clustering of highly similar reads within 3 mismatches.}                                                                                 & Y   & N       & Y       & N             & Y     & N                & Mis               & Greedy       \\
+\\
+\\
+UCLUST\cite{edgar_search_2010}      &  \multirow{2}[3]{4.5cm}{Fast clustering method that only compares a sequence to a predetermined number of potential centers.}                                              & Y   & Y       & Y       & Y             & N\tablefootnote{Default is inexact, but also offers an exact alignment mode.}    & Y                & Sim               & Greedy       \\ 
+\\
+\\
+\\
+\bottomrule
+\end{tabular}
+\caption{Clustering tools used in metagenomic studies. DNA and Protein refers to whether the clustering tool can work with DNA and protein sequences, respectively.  \emph{De novo} and Ref refers to whether the clustering tool can cluster sequences without and with a reference database, respectively. Exact clustering tools are those that compare a sequence to every cluster center. Multi-core clustering tools are those that support multiple threads.  Distance measure refers to tools that define distance between two sequences as percent similarity or mismatch number.  Strategy defines how the centers are created with greedy methods having some fixed procedure of selecting the center from the dataset, while hierarchical refers to those that are constructed using a guide tree.}
+\hspace*{-1.5cm}
+\end{table}
+
+
 
 \subsection{Greedy clustering paradigm}
 
