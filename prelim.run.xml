@@ -82,7 +82,10 @@
       <file>prelim-blx.bib</file>
     </requires>
     <requires type="editable">
-      <file>prelim.bib</file>
+      <file>clustering_tools.bib</file>
+      <file>metagenomics.bib</file>
+      <file>string.bib</file>
+      <file>extra.bib</file>
     </requires>
     <requires type="static">
       <file>biblatex.bst</file>

@@ -14,3 +14,6 @@ clean:
 	rm -f prelim.log 
 	rm -f prelim.dvi 
 	rm -f prelim.aux 
+	rm -f prelim.bbl
+	rm -f prelim.blg
+	rm -f prelim.bcf

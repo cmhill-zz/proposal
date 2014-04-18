@@ -18,13 +18,20 @@
 \usepackage{tablefootnote}
 \usepackage{multirow} 
 \usepackage{amsthm}
+\usepackage{float}
+\newfloat{algorithm}{t}{lop}
+ \floatname{algorithm}{Algorithm}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{definition}[theorem]{Definition}
 
 \usepackage[backend=bibtex8]{biblatex} 
 
-\addbibresource{prelim.bib}
+\addbibresource{clustering_tools.bib}
+\addbibresource{metagenomics.bib}
+\addbibresource{string.bib}
+\addbibresource{extra.bib}
+
 
 %\begin{comment}
 \textwidth = 6.5 in
@@ -80,13 +87,21 @@ Philosophy}\\[5.5cm]
 \thispagestyle{empty}
 \mbox{}
 
-
-\newpage
 \setcounter{page}{1}
 \doublespacing
 \begin{abstract}
 
-Insert abstract here.
+Microbes play a large role in every aspect of our lives.
+They aid in our digestion of food, have been associated with different diseases, and even help identify which keyboard and mouse we use.
+In the environment, these microbes are responsible for the most of the biochemical cycles that allow life to exist on earth, such as the carbon and nitrogen cycle.
+Despite their importance, these organisms are among the least understood on Earth due in part to the difficult nature of culturing them in a laboratory setting.
+In typical analyses, the short fragments produced from sequencing technologies need to be clustered into similar groups based on some definition of similarity.
+
+In this prospectus, we will describe the current approaches and limitations for clustering biological sequences, which are represented electronically as strings of characters.
+First, we will discuss multi-core algorithms to speedup the runtime of clustering.
+Then, we will describe efficient string matching algorithms and how to use the high sequencing similarity to quickly recruit sequences to potential cluster centers.
+Lastly, we will discuss multiple strategies for handling sequences that can align to multiple centers.
+
 
 \end{abstract}
 \setstretch{.5}
@@ -96,6 +111,8 @@ Insert abstract here.
 
 \newpage
 \listoffigures
+\listoftables
+\listofalgorithms
 
 \newpage
 \doublespacing
@@ -130,19 +147,18 @@ Insert abstract here.
 \input{preliminary_work.tex}
 
 %\section{Proposed Work}
-\input{proposed_work.tex}
+%\input{proposed_work.tex}
 
 \section{Timeline}
 
 \begin{center}
 \begin{tabular}{|l|c|}
 \hline
-Item 1 & 2 months \\
-Item 2 & 3 months \\
-Item 3 & 4-5 months \\
-Item 4 & 2-3 months \\
+Parallel DNACLUST & 1 months \\
+Fast, exact clustering tool using efficient $k$-diff algorithm & 2-4 months \\
+Handling ambiguous read and their affect on differential abundance & 1 months \\
 \hline
-\textbf{TOTAL} & 11-13 months \\
+\textbf{TOTAL} & 4-6 months \\
 \hline
 \end{tabular}
 \end{center}
@@ -150,15 +166,20 @@ Item 4 & 2-3 months \\
 Paper deadline goals:
 
 \begin{itemize}
-\item Conference, Month Year: Project 1
+\item 14th Workshop on Algorithms in Bioinformatics (WABI), May 2014: Parallel DNACLUST and ambiguous read assignment strategy
 \item Conference, Month Year: Project 2
-\item Conference, Month Year: Project 3
 \end{itemize}
 
 
 \section{Conclusion}
 
-Insert conclusion here.
+Microorganisms play an important role in the environment.
+Despite this, these microbes are among the least understood on Earth due in part to difficulties culturing them in a lab setting.
+Sequencing technology provides us with a solution, allowing us to get a snapshot of the microscopic communities that inhabit these environments.
+Unfortunately, this snapshot only can provide us with a very small, noisy picture of the community.
+In typical analyses, the short fragments of DNA produced from sequencing technologies need to be clustered into similar groups based on some similarity.
+In this prospectus, we have described the current approaches and limitations for clustering highly similar DNA sequences.
+By leveraging efficient string matching algorithms and multi-core systems, we have proposed a fast and exact clustering tool for DNA sequences.
 
 \newpage
 
@@ -166,51 +187,18 @@ Insert conclusion here.
 \section{Reading List}
 \label{app:readinglist}
 
-\subsection{Area 1}
+\subsection{Clustering}
 
-1) Citation 1.
+%\addbibresource{clustering_tools.bib}
+\printbibliography[keyword=chriscluster,heading=subbibliography,heading=none]
 
-2) Citation 2.
+\subsection{Metagenomics}
 
-3) Citation 3.
+\printbibliography[keyword=chrismetagenomics,heading=subbibliography,heading=none]
 
-4) Citation 4.
+\subsection{String algorithms}
 
-5) Citation 5.
-
-
-\subsection{Area 2}
-
-1) Citation 1.
-
-2) Citation 2.
-
-3) Citation 3.
-
-4) Citation 4.
-
-5) Citation 5.
-
-
-\subsection{Area 3}
-
-1) Citation 1.
-
-2) Citation 2.
-
-3) Citation 3.
-
-4) Citation 4.
-
-5) Citation 5.
-
-
-
-\newpage
-
-\section{Appendix A}
-\label{app:cvtdp2r}
-
+\printbibliography[keyword=chrisstring,heading=subbibliography,heading=none]
 
 \newpage
 
