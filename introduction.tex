@@ -1,31 +1,34 @@
 \section{Introduction}
 
 Microbes play a large role in every aspect of our lives.
-They aid in our digestion of food\cite{gill_metagenomic_2006}, have been associated with different diseases\cite{qin_metagenome-wide_2012}, and even help identify which keyboard and mouse we use\cite{fierer_forensic_2010}.
-In the environment, these microbes are responsible for the most of the biochemical cycles that allow life to exist on earth, such as the carbon and nitrogen cycle\cite{venter_environmental_2004}.
-Despite their importance, these organisms are among the least understood on Earth due in part to the difficult nature of culturing them in a lab setting.
+They aid in digestion of food\cite{gill_metagenomic_2006}, have been associated with different diseases\cite{qin_metagenome-wide_2012}, and even help identify which keyboard and mouse we use\cite{fierer_forensic_2010}.
+In the environment, these microbes are responsible for most of the biochemical cycles that allow life to exist on earth, such as the carbon and nitrogen cycle\cite{venter_environmental_2004}.
+Despite their importance, these organisms are among the least understood on Earth due in part to the difficult nature of culturing them in a laboratory setting.
 
+In metagenomics projects, we study the sequences directly recovered from environmental samples\cite{wooley_primer_2010}.
 Advances in sequencing technology allow us to capture a snapshot of the microbial community.
 Unfortunately, this snapshot only can provide us with a very small, noisy picture of the microbial community.
 A common genome size of a bacteria is often several million base pairs (bps) long and serves as the blueprint for building that organism.
 Due to limitations in sequencing technology, we are only able to produce small fragments (called \emph{reads}), a couple hundred base pairs in length, from the organism.
+These sequences are represented electronically as strings of characters.
 Depending on the specific sequencing technology used, these fragments can be drawn randomly from the underlying genomes or from a specified region.
 
 Often times, we want to learn what species of bacteria are found in an environment and their relative abundances.
 Relative bacterial abundances often vary in several orders of magnitude.
-Using methods to draw reads randomly from the underlying genomes are very expensive if we want to find rare species in an environment.
-Fortunately, researchers have developed primers which allow us to sequence a specific conserved gene-- called the 16s ribosomal RNA (or 16s rRNA) gene)-- found in a large number of bacteria.
+Using methods to draw reads randomly from the underlying genomes -- called whole genome shotgun (WGS) -- are very expensive if we want to find the rarer species of an environment.
+Fortunately, researchers have developed primers which allow us to sequence a specific conserved gene -- called the 16s ribosomal RNA (or 16s rRNA) gene) -- found in a large number of bacteria.
 This gene is useful for phylogenetic studies because it is highly conserved between different species of bacteria.
 16s rRNA genes contain nine hypervariable regions (V1-V9) that accumulate mutations overtime, providing us with species-specific signatures used for identifying bacteria.
 
-A typical sequencing project involves first selecting or designing a primer that starts in a conserved region of the 16s rRNA gene and then allows the sequencing to extend through a couple hypervariable regions.
+A typical metagenomic sequencing project involves first selecting or designing a primer that starts in a conserved region of the 16s rRNA gene and then allows the sequencing to extend through a couple hypervariable regions.
 Once the reads have been generated, we now need to determine what reads came from what bacteria.
-Since most of the bacterial species we encountered have never been seen before (NEED CITATION), we need to cluster (or group) similar reads together into operational taxonomic units (OTUs) based on sequence similarity.
+Since many bacterial species we encountered have never been seen before\cite{gill_metagenomic_2006}, we need to cluster (or group) similar reads together into operational taxonomic units (OTUs) based on sequence similarity.
 
-The problem of clustering is a widely-studied problem in computer science\cite{fasulo_analysis_1999} and serves as the basis of this prospectus.
-In this prospectus, we will first outline the current approaches used to cluster highly similar sequences.
+The problem of clustering is a widely-studied in computer science\cite{fasulo_analysis_1999} and serves as the basis of this prospectus.
+%In this prospectus, 
+We will first outline the current approaches used to cluster highly similar sequences.
 Then we will describe our improvements to these existing methods made by utilizing multiple processors and efficient string matching algorithms.
-Finally, we will discuss future work.
+%Finally, we will discuss future work.
 
 
 %In order to examine

@@ -25,7 +25,9 @@
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{definition}[theorem]{Definition}
 
-\usepackage[backend=bibtex8]{biblatex} 
+\usepackage[backend=bibtex8,style=numeric,url=false,isbn=false]{biblatex} 
+
+\renewbibmacro{in:}{}
 
 \addbibresource{clustering_tools.bib}
 \addbibresource{metagenomics.bib}
@@ -92,15 +94,18 @@ Philosophy}\\[5.5cm]
 \begin{abstract}
 
 Microbes play a large role in every aspect of our lives.
-They aid in our digestion of food, have been associated with different diseases, and even help identify which keyboard and mouse we use.
-In the environment, these microbes are responsible for the most of the biochemical cycles that allow life to exist on earth, such as the carbon and nitrogen cycle.
+They aid in digestion of food, have been associated with different diseases, and even help identify which keyboard and mouse we use.
+In the environment, these microbes are responsible for most of the biochemical cycles that allow life to exist on earth, such as the carbon and nitrogen cycle.
 Despite their importance, these organisms are among the least understood on Earth due in part to the difficult nature of culturing them in a laboratory setting.
-In typical analyses, the short fragments produced from sequencing technologies need to be clustered into similar groups based on some definition of similarity.
+Fortunately, advances in sequencing technology allow us to capture a small, noisy snapshot of the microbial community.
+In typical analyses, the short fragments produced from these sequencing technologies first need to be clustered into similar groups based on some definition of similarity.
+%The vast amount of sequencing data has led to researchers utilizing heuristics to cluster this data.
 
 In this prospectus, we will describe the current approaches and limitations for clustering biological sequences, which are represented electronically as strings of characters.
-First, we will discuss multi-core algorithms to speedup the runtime of clustering.
-Then, we will describe efficient string matching algorithms and how to use the high sequencing similarity to quickly recruit sequences to potential cluster centers.
-Lastly, we will discuss multiple strategies for handling sequences that can align to multiple centers.
+First, we will discuss multi-core algorithms that speedup the runtime of clustering.
+Then, we will describe efficient string matching algorithms to quickly recruit sequences to potential centers.
+By sorting highly similar sequences, we provide a novel way to reduce the amount of work done during cluster recruitment.
+Lastly, we will discuss the problematic issue of sequences that can align equally well to multiple centers and present strategies for handling them.
 
 
 \end{abstract}
@@ -167,7 +172,7 @@ Paper deadline goals:
 
 \begin{itemize}
 \item 14th Workshop on Algorithms in Bioinformatics (WABI), May 2014: Parallel DNACLUST and ambiguous read assignment strategy
-\item Conference, Month Year: Project 2
+\item Nucleic Acids Research, September 2014: Efficient k-difference clustering tool
 \end{itemize}
 
 
@@ -183,6 +188,15 @@ By leveraging efficient string matching algorithms and multi-core systems, we ha
 
 \newpage
 
+
+\section{Acknowledgments}
+
+I owe my sincere gratitude to all the people who made this work possible.
+I'd like to thank my adviser Mihai Pop for giving me the opportunity to work on intellectually challenging and interesting projects for nearly 8 years.
+His guidance and support has led me to pursue a career in academia and I am forever grateful.
+Furthermore, I would like to thank my committee members and mentors Atif Memon and H\'ector Corrada Bravo for their support.
+I owe a great thanks to all the members of Pop, Bravo, and Memon labs for their discussions, contribution, and friendship.
+
 \appendix
 \section{Reading List}
 \label{app:readinglist}
@@ -192,18 +206,19 @@ By leveraging efficient string matching algorithms and multi-core systems, we ha
 %\addbibresource{clustering_tools.bib}
 \printbibliography[keyword=chriscluster,heading=subbibliography,heading=none]
 
-\subsection{Metagenomics}
-
-\printbibliography[keyword=chrismetagenomics,heading=subbibliography,heading=none]
-
 \subsection{String algorithms}
 
 \printbibliography[keyword=chrisstring,heading=subbibliography,heading=none]
 
+\subsection{Metagenomics}
+
+\printbibliography[keyword=chrismetagenomics,heading=subbibliography,heading=none]
+
+
 \newpage
 
 \nocite{*}
-\printbibliography
+%\printbibliography
 
 %\bibliographystyle{plain} 
 %\bibliography{prelim}

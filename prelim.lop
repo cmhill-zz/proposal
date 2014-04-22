@@ -1,4 +1,4 @@
 \defcounter {refsection}{0}\relax 
-\contentsline {algorithm}{\numberline {1}{\ignorespaces Compute global edit distance between two strings. $O(nm)$ work.\relax }}{10}
+\contentsline {algorithm}{\numberline {1}{\ignorespaces Compute global edit distance between two strings. $O(nm)$ work.\relax }}{11}
 \defcounter {refsection}{0}\relax 
-\contentsline {algorithm}{\numberline {2}{\ignorespaces Landau-Vishkin $k$-differences algorithm. $O(kn)$ work.\relax }}{15}
+\contentsline {algorithm}{\numberline {2}{\ignorespaces Landau-Vishkin $k$-differences algorithm. $O(kn)$ work.\relax }}{16}

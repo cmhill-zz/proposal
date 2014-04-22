@@ -1,30 +1,86 @@
 \section{Related Work}
 
-Clustering tools often fall into two specific categories: \emph{hierarchical} or \emph{greedy}.
+Sequence clustering tools often fall into two specific categories: \emph{hierarchical} or \emph{greedy}.
 In this section, we will discuss each clustering paradigm and their popular implementations (Table \ref{table:clustering_tools}).
 
-\subsection{Hierarchical clustering}
-The traditional approach for clustering sequences was to use a hierarchical clustering method.
-These methods start with a pair-wise distance matrix and then iteratively merge similar points into clusters.
-Distance between two sequence can be the minimum number of edits (insertions, deletions, substitutions) to transform one sequence into the other (called \emph{edit distance}), the \emph{similarity} (defined as the $1 - \frac{\text{edit distance}}{|\text{sequence}|}$), and \emph{identity} (fraction of bases that are identical between the two sequences).
-In addition to the above distances, we can create a vector of counts for all k-length substrings of the sequences (called \emph{k}-mers) and calculate some distance measure (such as euclidean) between the resulting vectors.
 
-It is important to note that not all distance measures are created equally, though.
+
+\subsection{Hierarchical clustering}
+The traditional approach for clustering sequences has been to use a hierarchical clustering method.
+These methods start with a pairwise distance matrix and then iteratively merge similar points into clusters.
+Distance between two sequence can be the minimum number of edits (insertions, deletions, substitutions) to transform one sequence into the other (called \emph{edit distance}), the \emph{similarity} (defined as the $1 - \frac{\text{edit distance}}{|\text{sequence}|}$), and the \emph{identity} (fraction of bases that are identical between the two sequences).
+In addition to the above distances, we can create a vector of counts for all k-length substrings of the sequences (called \emph{k}-mers) and calculate some distance measure (such as euclidean) between the resulting vectors.
+It is important to note that not all distance measures are created equal, though.
 A distance metric must obey the triangle inequality, i.e., for every sequences \emph{A}, \emph{B}, and \emph{C}, $dist(A,B) + dist(B,C) \leq dist(A,C)$.
 The identity measure does not follow the triangle inequality.
 
-Once we have selected a distance measure, we need to calculate the pair-wise distances for all sequences to create our distance matrix.
+Once we have selected a distance measure, we need to calculate the pairwise distances for all sequences to create our distance matrix.
 Lets assume we have selected edit distance for our distance measure.
 Edit distance between two sequences of length $n$ can be calculated via dynamic programming, a strategy for solving problems by breaking them down into ``simpler'' subproblems, in $O(n^2)$ time and work.
 We will discuss the algorithms used in more detail in the next section.
 
-Once the distance  is built, clustering is typically done via hierarchical methods.
+Once the pairwise distance matrix is built, clustering is typically done via hierarchical methods.
 Agglomerative methods involve a bottom-up approach, where each sequence starts as its own cluster then iteratively merged with other clusters.
+ESPRIT-Tree\cite{cai_esprit-tree:_2011} and HPC-CLUST\cite{rodrigues_hpc-clust:_2014} are both fast agglomerative methods.
+ESPRIT-Tree relies on fast k-mer filtering methods to reduce the amount of pairwise distance computations required to build the tree.
+HPC-CLUST, unlike ESPRIT-Tree, does not compute the pairwise distances itself, but provides the user with efficient tree building algorithms using a variety of inter-cluster distance measures.
 Divisive methods, on the other hand, work from a top-down approach, where all sequences belong to a single cluster then are iteratively split into smaller clusters.
+
+
+\begin{table}[t!]
+\centering\scriptsize
+\hspace*{-1.5cm}
+\begin{tabular}{@{}llcccccccc@{}}
+\toprule
+Tool        & Description                                                                                                                                       & DNA & Protein & \emph{De novo} & Ref & Exact & Multi-core & Distance measure         & Strategy     \\ \midrule
+BLAST\cite{altschul_gapped_1997}       & \multirow{4}[3]{4.5cm}{Alignment tool using neighborhood keywords to speed up alignment A script can be used to align to a reference database and filter results.}       & Y   & Y       & N       & Y             & N     & Y                & N/A                      & N/A          \\
+\\
+\\
+\\
+\\
+\\
+AbundantOTU\cite{ye_identification_2010} &  \multirow{2}[3]{4.5cm}{Fast method to build cluster centers from abundant k-mers}                                                                                         & Y   & N       & Y       & N             & Y     & N                & Sim               & Greedy       \\
+\\
+\\
+\\
+CD-HIT\cite{li_clustering_2001,fu_cd-hit:_2012}      &  \multirow{2}[3]{4.5cm}{Family of clustering tools. Speed comes from using a short word filter to prune potential alignments.}                                             & Y   & Y       & Y       & N             & N\tablefootnote{Only exact for a preset number of similarities.}    & Y                & Sim               & Greedy       \\
+\\
+\\
+\\
+DNACLUST\cite{ghodsi_dnaclust:_2011}    &  \multirow{2}[3]{4.5cm}{Fast, exact clustering tool that exploits database sequence similarity to reduce work.}                                                            & Y   & N       & Y       & Y             & Y     & Y                & Sim / Mis & Greedy       \\
+\\
+\\
+\\
+DySC\cite{zheng_dysc:_2012}        &  \multirow{2}[3]{4.5cm}{Uses a two-step clustering heuristic to build larger clusters.}                                                                                    & Y   & N       & Y       & N             & N     & N                & Sim               & Greedy       \\
+\\
+\\
+ESPRIT-Tree\cite{cai_esprit-tree:_2011} &  \multirow{2}[3]{4.5cm}{Hierarchical method that represents a cluster of sequences as a single probabilistic sequence and uses that for pairwise alignments of clusters.} & Y   & N       & Y       & N             & N\tablefootnote{Default k-mer length filter does not guarantee correctness.}     & N                & Sim               & Hierarchical \\
+\\
+\\
+\\
+\\
+HPC-CLUST\cite{rodrigues_hpc-clust:_2014}   &  \multirow{2}[3]{4.5cm}{Scalable, and flexible hierarchical method for clustering pre-aligned reads.}                                                                      & Y   & N       & Y       & N             & N/A\tablefootnote{Takes as input pairwise sequence distances.}    & Y                & Sim               & Hierarchical \\
+\\
+\\
+\\
+SEED\cite{bao_seed:_2011}        &  \multirow{2}[3]{4.5cm}{Very fast clustering of highly similar reads within 3 mismatches.}                                                                                 & Y   & N       & Y       & N             & Y     & N                & Mis               & Greedy       \\
+\\
+\\
+UCLUST\cite{edgar_search_2010}      &  \multirow{2}[3]{4.5cm}{Fast clustering method that only compares a sequence to a predetermined number of potential centers.}                                              & Y   & Y       & Y       & Y             & N\tablefootnote{Default is inexact, but also offers an exact alignment mode.}    & Y                & Sim               & Greedy       \\ 
+\\
+\\
+\\
+\bottomrule
+\end{tabular}
+\caption{Clustering tools used in metagenomic studies. DNA and Protein refers to whether the clustering tool can work with DNA and protein sequences, respectively.  \emph{De novo} and Ref refers to whether the clustering tool can cluster sequences without and with a reference database, respectively. Exact clustering tools are those that compare a sequence to every cluster center. Multi-core clustering tools are those that support multiple threads.  Distance measure refers to tools that define distance between two sequences as percent similarity or mismatch number.  Strategy defines how the centers are created with greedy methods having some fixed procedure of selecting the center from the dataset, while hierarchical refers to those that are constructed using a guide tree.}
+\label{table:clustering_tools}
+\hspace*{-1.5cm}
+\end{table}
+
 
 \subsection{Greedy clustering}
 
-Calculating the pair-wise edit distance between $N$ sequences will take $O(N^2n^2)$ work.
+Calculating the pairwise edit distance between $N$ sequences of length $n$ will take $O(N^2n^2)$ work.
 This amount of time is impractical for the large number of sequences produced by sequencing technologies today.
 454 sequencing by the 454 Life Sciences company can produce tens of millions of sequences.
 An alternative approach to hierarchical clustering sequences involves iteratively selecting a sequence to serve as a cluster center and then recruiting all remaining sequences that fall within some given distance of the cluster center.
@@ -60,56 +116,6 @@ In this section, we will discuss the different strategies for selecting centers 
 
 %\subsection{Greedy clustering paradigm}
 
-\begin{table}[t!]
-\centering\scriptsize
-\hspace*{-1.5cm}
-\begin{tabular}{@{}llcccccccc@{}}
-\toprule
-Tool        & Description                                                                                                                                       & DNA & Protein & \emph{De novo} & Ref & Exact & Multi-core & Distance measure         & Strategy     \\ \midrule
-BLAST\cite{altschul_gapped_1997}       & \multirow{4}[3]{4.5cm}{Alignment tool using neighborhood keywords to speed up alignment A script can be used to align to a reference database and filter results.}       & Y   & Y       & N       & Y             & N     & Y                & N/A                      & N/A          \\
-\\
-\\
-\\
-\\
-\\
-AbundantOTU\cite{ye_identification_2010} &  \multirow{2}[3]{4.5cm}{Fast method to build cluster centers from abundant k-mers}                                                                                         & Y   & N       & Y       & N             & Y     & N                & Sim               & Greedy       \\
-\\
-\\
-\\
-CD-HIT\cite{li_clustering_2001,fu_cd-hit:_2012}      &  \multirow{2}[3]{4.5cm}{Family of clustering tools. Speed comes from using a short word filter to prune potential alignments.}                                             & Y   & Y       & Y       & N             & N\tablefootnote{Only exact for a preset number of similarities.}    & Y                & Sim               & Greedy       \\
-\\
-\\
-\\
-DNACLUST\cite{ghodsi_dnaclust:_2011}    &  \multirow{2}[3]{4.5cm}{Fast, exact clustering tool that exploits database sequence similarity to reduce work.}                                                            & Y   & N       & Y       & Y             & Y     & Y                & Sim / Mis & Greedy       \\
-\\
-\\
-\\
-DySC\cite{zheng_dysc:_2012}        &  \multirow{2}[3]{4.5cm}{Uses a two-step clustering heuristic to build larger clusters.}                                                                                    & Y   & N       & Y       & N             & N     & N                & Sim               & Greedy       \\
-\\
-\\
-ESPRIT-Tree\cite{cai_esprit-tree:_2011} &  \multirow{2}[3]{4.5cm}{Hierarchical method that represents a cluster of sequences as a single probabilistic sequence and uses that for pair-wise alignments of clusters.} & Y   & N       & Y       & N             & N\tablefootnote{Default k-mer length filter does not guarantee correctness.}     & N                & Sim               & Hierarchical \\
-\\
-\\
-\\
-\\
-HPC-CLUST\cite{rodrigues_hpc-clust:_2014}   &  \multirow{2}[3]{4.5cm}{Scalable, and flexible hierarchical method for clustering pre-aligned reads.}                                                                      & Y   & N       & Y       & N             & N/A\tablefootnote{Takes as input pair-wise sequence distances.}    & Y                & Sim               & Hierarchical \\
-\\
-\\
-\\
-SEED\cite{bao_seed:_2011}        &  \multirow{2}[3]{4.5cm}{Very fast clustering of highly similar reads within 3 mismatches.}                                                                                 & Y   & N       & Y       & N             & Y     & N                & Mis               & Greedy       \\
-\\
-\\
-UCLUST\cite{edgar_search_2010}      &  \multirow{2}[3]{4.5cm}{Fast clustering method that only compares a sequence to a predetermined number of potential centers.}                                              & Y   & Y       & Y       & Y             & N\tablefootnote{Default is inexact, but also offers an exact alignment mode.}    & Y                & Sim               & Greedy       \\ 
-\\
-\\
-\\
-\bottomrule
-\end{tabular}
-\caption{Clustering tools used in metagenomic studies. DNA and Protein refers to whether the clustering tool can work with DNA and protein sequences, respectively.  \emph{De novo} and Ref refers to whether the clustering tool can cluster sequences without and with a reference database, respectively. Exact clustering tools are those that compare a sequence to every cluster center. Multi-core clustering tools are those that support multiple threads.  Distance measure refers to tools that define distance between two sequences as percent similarity or mismatch number.  Strategy defines how the centers are created with greedy methods having some fixed procedure of selecting the center from the dataset, while hierarchical refers to those that are constructed using a guide tree.}
-\label{table:clustering_tools}
-\hspace*{-1.5cm}
-\end{table}
-
 
 
 \subsubsection{Cluster center selection}
@@ -141,6 +147,12 @@ Then the seed is greedily extended one nucleotide at a time, selecting the nucle
 AbundantOTU works well at assembling highly abundant OTUs because it is robust to sequencing errors.
 Errors within OTUs should occur less frequently than their correct bases in abundant clusters.
 The authors of AbundantOTU recommend using the tool to cluster the abundant OTUs than using another clustering strategy for the remaining sequences.
+
+DySC\cite{zheng_dysc:_2012} attempts to have fewer, higher quality clusters by using temporary centers.
+After a predefined number of sequences are aligned to the temporary center, the cluster becomes \emph{fixed} and a new center is calculated based on shared \emph{k}-mers of the reads in the cluster.
+Afterwards, all reads are re-aligned to the new center to insure the similarity constraints still hold.
+
+SEED\cite{bao_seed:_2011} is a clustering tool that was not designed for taxonomic analysis. Instead, SEED is used to cluster short WGS reads within a few number of mismatches to improve assembly.  It performs an approach similar to deduplication, collapsing highly redundant reads.  While information is lost, the authors show that they can improve runtime and quality of the resulting assemblies. The cluster centers are chosen arbitrary and finding potential member sequences is done via fast hashing of small seeds.
 
 %UCLUST also allows users to select potential centers based on abundances.
 
@@ -184,7 +196,7 @@ In this section, we will explain how the \emph{edit distance} is calculated.
 \begin{figure}[b!]
   \centering
     \includegraphics[width=0.7\textwidth]{global_semiglobal}
-  \caption{Global vs. semi-global alignment.  In global alignments, the start and end gaps count as mismatches.  In semi-global alignments, the start and end gaps of the text are not penalized.}
+  \caption{Global vs. semi-global alignment.  In global alignment, the start and end gaps count as mismatches.  In semi-global alignments, the start and end gaps of the text are not penalized.}
   \label{fig:global_vs_semiglobal}
 \end{figure}
 
@@ -201,9 +213,11 @@ A difference is one of the following:
 \end{enumerate}
 \end{definition}
 
-The Needleman–Wunsch\cite{needleman_general_1970} algorithm was the first application of dynamic programming to compare sequences.
+The Needleman-–Wunsch\cite{needleman_general_1970} algorithm was the first application of dynamic programming to compare sequences.
 We can use this algorithm to also calculate the edit distance between two strings.
 At a high level, we find the optimal alignment of two sequences by looking at the optimal alignment of the prefixes of the two sequences.
+In our work, the text $t$ is the cluster center and the pattern $p$ is the current sequence in our database.
+We are trying to find occurrences of the pattern (sequence) in our text (center) with a given number of edits.
 
 Let $M$ be an $(m+1) \times (n+1)$ table.  The value at cell $M(i,j)$ is the minimum number of edits to transform $p_1..p_i$ into $t_1..t_j$.
 We can find this value by examining the three types of edits.
@@ -234,7 +248,16 @@ For semi-global alignment, $M(0,i) = 0$ for $0 \leq i \leq n$.
 
 Once the dynamic programming table $M$ is populated, we need to specify where to find the solution, i.e., the minimum edit distance between the pattern and text.
 In the case of global alignment, the solution will be located in cell $M(m,n)$.
-For semi-global alignments, we do not penalize end gaps in the text, so the solution lies in the cell that contains the minimum value of row $m$ of $M$. Thus, the final algorithm:
+For semi-global alignments, we do not penalize end gaps in the text, so the solution lies in the cell that contains the minimum value of row $m$ of $M$. The final algorithm is presented in Algorithm 1.
+
+Since we are populating a table with $(m+1) \times (n+1)$ values and doing a constant amount of work per cell (looking up the value of three adjacent cells) the total time and space requirement to calculate the edit distance between two strings is $O(nm)$.
+The space requirement can be relaxed to $O(n)$ using a divide-and-conquer approach\cite{gusfield_algorithms_1997}.
+Similarly, if we set a bounds on the maximum number of edits ($k$), we can reduce the runtime even further.
+If we want to find a global alignment within $k$-differences (edits), we only need to worry about a $2k+1$ band along the diagonal.
+This reduces the time complexity from $O(nm)$ to $O(nk)$.
+However, this assumes we are aligning the two sequences end-to-end.
+In the next section, we will outline the steps necessary to reduce this to $O(nk)$ for semi-global alignments.
+
 
 % Edit distance computation
  \begin{algorithm}
@@ -251,9 +274,9 @@ For semi-global alignments, we do not penalize end gaps in the text, so the solu
 
  \For{$i=1 .. n$}
  \For{$j=1 .. m$}
-  \State $row \gets M(i-1,j) + 1$ \Comment Number of edits with a gap inserted into $b$
-  \State $col \gets M(i,j-1) + 1$ \Comment Number of edits with gap inserted into $a$
-  \State $diag \gets M(i-1, j-1)$ \Comment Number of edits with matching characters $a_i$ and $b_j$
+  \State $row \gets M(i-1,j) + 1$ \Comment Number of edits with a gap inserted into $text$
+  \State $col \gets M(i,j-1) + 1$ \Comment Number of edits with gap inserted into $pattern$
+  \State $diag \gets M(i-1, j-1)$ \Comment Number of edits with matching characters $p_i$ and $t_j$
   \If{$a_i \neq b_j$}  $diag \gets diag +  1$ \EndIf
   \State $M(i,j) \gets \text{min}(row,col,diag)$
 \EndFor
@@ -262,14 +285,6 @@ For semi-global alignments, we do not penalize end gaps in the text, so the solu
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
-
-Since we are populating a table with $(m+1) \times (n+1)$ values and doing a constant amount of work per cell (looking up the value of three adjacent cells) the total time and space requirement to calculate the edit distance between two strings is $O(nm)$.
-The space requirement can be relaxed to $O(n)$ using a divide-and-conquer approach\cite{gusfield_algorithms_1997}.
-Similarly, if we set a bounds on the maximum number of edits ($k$), we can reduce the runtime even further.
-If we want to find a global alignment within $k$-differences (edits), we only need to worry about a $2k+1$ band along the diagonal.
-This reduces the time complexity from $O(nm)$ to $O(nk)$.
-However, this assumes we are aligning the two sequences end-to-end.
-In the section, we will outline the steps necessary to reduce this to $O(nk)$ for semi-global alignments.
 
 %Algorithms for $k-mismatches$ only satisfies differences of type 1.
 
